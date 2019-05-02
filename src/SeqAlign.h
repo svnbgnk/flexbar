@@ -107,11 +107,12 @@ public:
 		TAlignResults am;
 
 		int qIndex  = -1;
-		int amScore = numeric_limits<int>::min();
+                int pos_bestScore = -1;
+                int amScore = numeric_limits<int>::min();
+		int amScore_bestScore = numeric_limits<int>::min();
 
                 std::vector<TAlignResults> am_v;
                 std::vector<int> qIndex_v;
-//                 std::vector<int> amScore_v;
 
 
 		// align each query sequence and store best one
@@ -143,154 +144,176 @@ public:
 			// check if alignment is valid, score max, number of errors and overlap length
 			if(validAl && a.score > amScore && madeErrors <= a.allowedErrors && a.overlapLength >= minOverlap){
 
-				am      = a;
-                                //it seems amScore is no longer used?
-				amScore = a.score;
+// 				am      = a;
+                                amScore = a.score;
 				qIndex  = i;
 
+                                //TODO add option to clear vectors and reset bestScore
+                                if(amScore_bestScore < amScore){
+                                    amScore_bestScore = amScore;
+                                    pos_bestScore = qIndex_v.size();
+                                }
+
                                 am_v.push_back(a);
-//                                 amScore_v.push_back(a.score);
-                                qIndex_v.push_back(i);
+                                qIndex_v.push_back(qIndex);
 			}
 		}
 
 		stringstream s;
 
 		// valid alignment
-                for(unsigned int i = 0; i < qIndex_v.size(); ++i){
-//                 if(qIndex >= 0){
-                    if(i < qIndex_v.size() - 1)
-                        s << "Alternative Alignment:\n";
-                    qIndex = qIndex_v[i];
-                    am = am_v[i];
+                if(qIndex_v.size() > 0){
+                    for(unsigned int i = 0; i <= qIndex_v.size(); ++i){
 
+                        //add option to just use the last element
+                        if(m_log != EVE)
+                        {
+                            qIndex = qIndex_v.back();
+                            am = am_v.back();
+                        }else{
+                            // skip best Score and log it in an additional iteration at the end
+                            if(pos_bestScore == i)
+                                continue;
+                            if(i < qIndex_v.size()){
+                                s << "Alternative Alignment:\n";
+                                qIndex = qIndex_v[i];
+                                am = am_v[i];
+                            }
+                            else
+                            {
+                                s << "Best Alignment (" << qIndex_v.size() << "):" << "\n";
+                                qIndex = qIndex_v[pos_bestScore];
+                                am = am_v[pos_bestScore];
+                            }
+                        }
 
-			TrimEnd trimEnd = m_trimEnd;
+                            TrimEnd trimEnd = m_trimEnd;
 
-			// trim read based on alignment
-			if(performRemoval){
+                            // trim read based on alignment
+                            if(performRemoval){
 
-				if(trimEnd == ANY){
+                                    if(trimEnd == ANY){
 
-					if(am.startPosA <= am.startPosS && am.endPosS <= am.endPosA){
-						seqRead.seq = "";
-						if(m_format == FASTQ) seqRead.qual = "";
-					}
-					else if(am.startPosA - am.startPosS >= am.endPosS - am.endPosA){
-						trimEnd = RIGHT;
-					}
-					else trimEnd = LEFT;
-				}
+                                            if(am.startPosA <= am.startPosS && am.endPosS <= am.endPosA){
+                                                    seqRead.seq = "";
+                                                    if(m_format == FASTQ) seqRead.qual = "";
+                                            }
+                                            else if(am.startPosA - am.startPosS >= am.endPosS - am.endPosA){
+                                                    trimEnd = RIGHT;
+                                            }
+                                            else trimEnd = LEFT;
+                                    }
 
-				switch(trimEnd){
+                                    switch(trimEnd){
 
-					int rCutPos;
+                                            int rCutPos;
 
-					case LTAIL:
-					case LEFT:
-						rCutPos = am.endPos;
+                                            case LTAIL:
+                                            case LEFT:
+                                                    rCutPos = am.endPos;
 
-						// translate alignment end pos to read idx
-						if(am.startPosS > 0) rCutPos -= am.startPosS;
+                                                    // translate alignment end pos to read idx
+                                                    if(am.startPosS > 0) rCutPos -= am.startPosS;
 
-						// adjust to inner read gaps
-						rCutPos -= am.gapsR;
+                                                    // adjust to inner read gaps
+                                                    rCutPos -= am.gapsR;
 
-						if(rCutPos > readLength) rCutPos = readLength;
+                                                    if(rCutPos > readLength) rCutPos = readLength;
 
-						erase(seqRead.seq, 0, rCutPos);
+                                                    erase(seqRead.seq, 0, rCutPos);
 
-						if(m_format == FASTQ)
-						erase(seqRead.qual, 0, rCutPos);
+                                                    if(m_format == FASTQ)
+                                                    erase(seqRead.qual, 0, rCutPos);
 
-						break;
+                                                    break;
 
-					case RTAIL:
-						// adjust cut pos to original read length
-						am.startPos += readLength - am.tailLength;
+                                            case RTAIL:
+                                                    // adjust cut pos to original read length
+                                                    am.startPos += readLength - am.tailLength;
 
-					case RIGHT:
-						rCutPos = am.startPos;
+                                            case RIGHT:
+                                                    rCutPos = am.startPos;
 
-						// skipped restriction
-						if(rCutPos < 0) rCutPos = 0;
+                                                    // skipped restriction
+                                                    if(rCutPos < 0) rCutPos = 0;
 
-						erase(seqRead.seq, rCutPos, readLength);
+                                                    erase(seqRead.seq, rCutPos, readLength);
 
-						if(m_format == FASTQ)
-						erase(seqRead.qual, rCutPos, readLength);
+                                                    if(m_format == FASTQ)
+                                                    erase(seqRead.qual, rCutPos, readLength);
 
-						break;
+                                                    break;
 
-	                case ANY:;
-				}
+                            case ANY:;
+                                    }
 
-				++m_modified;
+                                    ++m_modified;
 
-				// count number of removals for each query
-				m_queries->at(qIndex).rmOverlap++;
+                                    // count number of removals for each query
+                                    m_queries->at(qIndex).rmOverlap++;
 
-				if(am.overlapLength == am.queryLength)
-				m_queries->at(qIndex).rmFull++;
+                                    if(am.overlapLength == am.queryLength)
+                                    m_queries->at(qIndex).rmFull++;
 
-				if(m_writeTag){
-					append(seqRead.id, "_Flexbar_removal");
+                                    if(m_writeTag){
+                                            append(seqRead.id, "_Flexbar_removal");
 
-					if(! m_isBarcoding){
-						append(seqRead.id, "_");
-						append(seqRead.id, m_queries->at(qIndex).id);
-					}
-				}
+                                            if(! m_isBarcoding){
+                                                    append(seqRead.id, "_");
+                                                    append(seqRead.id, m_queries->at(qIndex).id);
+                                            }
+                                    }
 
-				// store overlap occurrences
-				if(am.overlapLength <= MAX_READLENGTH) m_rmOverlaps.at(am.overlapLength)++;
-				else cerr << "\nCompile Flexbar with larger max read length for correct overlap stats.\n" << endl;
-			}
+                                    // store overlap occurrences
+                                    if(am.overlapLength <= MAX_READLENGTH) m_rmOverlaps.at(am.overlapLength)++;
+                                    else cerr << "\nCompile Flexbar with larger max read length for correct overlap stats.\n" << endl;
+                            }
 
-			// valid alignment, not neccesarily removal
+                            // valid alignment, not neccesarily removal
 
-			if(m_randTag && am.randTag != ""){
-				append(seqRead.id, "_");
-				append(seqRead.id, am.randTag);
-			}
+                            if(m_randTag && am.randTag != ""){
+                                    append(seqRead.id, "_");
+                                    append(seqRead.id, am.randTag);
+                            }
 
-			// alignment stats
-			if(m_log == ALL || (m_log == MOD && performRemoval)){
+                            // alignment stats
+                            if(m_log == ALL || m_log == EVE || (m_log == MOD && performRemoval)){
 
-				if(performRemoval){
-					s << "Sequence removal:";
+                                    if(performRemoval){
+                                            s << "Sequence removal:";
 
-					     if(trimEnd == LEFT  || trimEnd == LTAIL) s << " left side\n";
-					else if(trimEnd == RIGHT || trimEnd == RTAIL) s << " right side\n";
-					else                                          s << " any side\n";
-				}
-				else s << "Sequence detection, no removal:\n";
+                                                if(trimEnd == LEFT  || trimEnd == LTAIL) s << " left side\n";
+                                            else if(trimEnd == RIGHT || trimEnd == RTAIL) s << " right side\n";
+                                            else                                          s << " any side\n";
+                                    }
+                                    else s << "Sequence detection, no removal:\n";
 
-				s << "  query id         " << m_queries->at(qIndex).id            << "\n"
-  				  << "  query pos        " << am.startPosA << "-" << am.endPosA   << "\n"
-				  << "  read id          " << seqRead.id                          << "\n"
-				  << "  read pos         " << am.startPosS << "-" << am.endPosS   << "\n"
-				  << "  score            " << am.score                            << "\n"
-				  << "  overlap          " << am.overlapLength                    << "\n"
-				  << "  errors           " << am.gapsR + am.gapsA + am.mismatches << "\n"
-				  << "  error threshold  " << am.allowedErrors                    << "\n";
+                                    s << "  query id         " << m_queries->at(qIndex).id            << "\n"
+                                    << "  query pos        " << am.startPosA << "-" << am.endPosA   << "\n"
+                                    << "  read id          " << seqRead.id                          << "\n"
+                                    << "  read pos         " << am.startPosS << "-" << am.endPosS   << "\n"
+                                    << "  score            " << am.score                            << "\n"
+                                    << "  overlap          " << am.overlapLength                    << "\n"
+                                    << "  errors           " << am.gapsR + am.gapsA + am.mismatches << "\n"
+                                    << "  error threshold  " << am.allowedErrors                    << "\n";
 
-				if(performRemoval){
-					s << "  remaining read   " << seqRead.seq << "\n";
+                                    if(performRemoval){
+                                            s << "  remaining read   " << seqRead.seq << "\n";
 
-					if(m_format == FASTQ)
-					s << "  remaining qual   " << seqRead.qual << "\n";
-				}
-				s << "\n  Alignment:\n" << endl << am.alString;
-			}
-			else if(m_log == TAB){
-				s << seqRead.id    << "\t" << m_queries->at(qIndex).id << "\t"
-				  << am.startPosA  << "\t" << am.endPosA               << "\t" << am.overlapLength << "\t"
-				  << am.mismatches << "\t" << am.gapsR + am.gapsA      << "\t" << am.allowedErrors << endl;
-			}
-		}
-
-		if(m_log == ALL && qIndex_v.size() == 0){
+                                            if(m_format == FASTQ)
+                                            s << "  remaining qual   " << seqRead.qual << "\n";
+                                    }
+                                    s << "\n  Alignment:\n" << endl << am.alString;
+                            }
+                            else if(m_log == TAB){
+                                    s << seqRead.id    << "\t" << m_queries->at(qIndex).id << "\t"
+                                    << am.startPosA  << "\t" << am.endPosA               << "\t" << am.overlapLength << "\t"
+                                    << am.mismatches << "\t" << am.gapsR + am.gapsA      << "\t" << am.allowedErrors << endl;
+                            }
+                    }
+                }
+		else if(m_log == ALL || m_log == EVE)
+                {
 			s << "Unvalid alignment:"        << "\n"
 			  << "read id   " << seqRead.id  << "\n"
 			  << "read seq  " << seqRead.seq << "\n\n" << endl;
