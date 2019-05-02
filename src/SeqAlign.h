@@ -164,7 +164,7 @@ public:
 		// valid alignment
                 if(qIndex_v.size() > 0){
                     for(unsigned int i = 0; i <= qIndex_v.size(); ++i){
-
+                        TSeqRead seqReadTmp = seqRead;
                         //add option to just use the last element
                         if(m_log != EVE)
                         {
@@ -195,8 +195,8 @@ public:
                                     if(trimEnd == ANY){
 
                                             if(am.startPosA <= am.startPosS && am.endPosS <= am.endPosA){
-                                                    seqRead.seq = "";
-                                                    if(m_format == FASTQ) seqRead.qual = "";
+                                                    seqReadTmp.seq = "";
+                                                    if(m_format == FASTQ) seqReadTmp.qual = "";
                                             }
                                             else if(am.startPosA - am.startPosS >= am.endPosS - am.endPosA){
                                                     trimEnd = RIGHT;
@@ -220,10 +220,10 @@ public:
 
                                                     if(rCutPos > readLength) rCutPos = readLength;
 
-                                                    erase(seqRead.seq, 0, rCutPos);
+                                                    erase(seqReadTmp.seq, 0, rCutPos);
 
                                                     if(m_format == FASTQ)
-                                                    erase(seqRead.qual, 0, rCutPos);
+                                                    erase(seqReadTmp.qual, 0, rCutPos);
 
                                                     break;
 
@@ -237,10 +237,10 @@ public:
                                                     // skipped restriction
                                                     if(rCutPos < 0) rCutPos = 0;
 
-                                                    erase(seqRead.seq, rCutPos, readLength);
+                                                    erase(seqReadTmp.seq, rCutPos, readLength);
 
                                                     if(m_format == FASTQ)
-                                                    erase(seqRead.qual, rCutPos, readLength);
+                                                    erase(seqReadTmp.qual, rCutPos, readLength);
 
                                                     break;
 
@@ -256,11 +256,11 @@ public:
                                     m_queries->at(qIndex).rmFull++;
 
                                     if(m_writeTag){
-                                            append(seqRead.id, "_Flexbar_removal");
+                                            append(seqReadTmp.id, "_Flexbar_removal");
 
                                             if(! m_isBarcoding){
-                                                    append(seqRead.id, "_");
-                                                    append(seqRead.id, m_queries->at(qIndex).id);
+                                                    append(seqReadTmp.id, "_");
+                                                    append(seqReadTmp.id, m_queries->at(qIndex).id);
                                             }
                                     }
 
@@ -272,8 +272,8 @@ public:
                             // valid alignment, not neccesarily removal
 
                             if(m_randTag && am.randTag != ""){
-                                    append(seqRead.id, "_");
-                                    append(seqRead.id, am.randTag);
+                                    append(seqReadTmp.id, "_");
+                                    append(seqReadTmp.id, am.randTag);
                             }
 
                             // alignment stats
@@ -290,7 +290,7 @@ public:
 
                                     s << "  query id         " << m_queries->at(qIndex).id            << "\n"
                                     << "  query pos        " << am.startPosA << "-" << am.endPosA   << "\n"
-                                    << "  read id          " << seqRead.id                          << "\n"
+                                    << "  read id          " << seqReadTmp.id                          << "\n"
                                     << "  read pos         " << am.startPosS << "-" << am.endPosS   << "\n"
                                     << "  score            " << am.score                            << "\n"
                                     << "  overlap          " << am.overlapLength                    << "\n"
@@ -298,17 +298,21 @@ public:
                                     << "  error threshold  " << am.allowedErrors                    << "\n";
 
                                     if(performRemoval){
-                                            s << "  remaining read   " << seqRead.seq << "\n";
+                                            s << "  remaining read   " << seqReadTmp.seq << "\n";
 
                                             if(m_format == FASTQ)
-                                            s << "  remaining qual   " << seqRead.qual << "\n";
+                                            s << "  remaining qual   " << seqReadTmp.qual << "\n";
                                     }
                                     s << "\n  Alignment:\n" << endl << am.alString;
                             }
                             else if(m_log == TAB){
-                                    s << seqRead.id    << "\t" << m_queries->at(qIndex).id << "\t"
+                                    s << seqReadTmp.id    << "\t" << m_queries->at(qIndex).id << "\t"
                                     << am.startPosA  << "\t" << am.endPosA               << "\t" << am.overlapLength << "\t"
                                     << am.mismatches << "\t" << am.gapsR + am.gapsA      << "\t" << am.allowedErrors << endl;
+                            }
+
+                            if(i == qIndex_v.size() || m_log != EVE){
+                                seqRead = seqReadTmp;
                             }
                     }
                 }
