@@ -169,9 +169,9 @@ public:
                         {
                             //only do one iteration of the loop
                             i = qIndex_v.size();
-                            // use last element
-                            qIndex = qIndex_v.back();
-                            am = am_v.back();
+                            // use best alignment
+                            qIndex = qIndex_v[pos_bestScore];
+                            am = am_v[pos_bestScore];
                         }else{
                             // skip best Score and log it in an additional iteration at the end
                             if(pos_bestScore == i)
