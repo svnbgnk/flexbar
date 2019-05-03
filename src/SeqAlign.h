@@ -165,9 +165,11 @@ public:
                 if(qIndex_v.size() > 0){
                     for(unsigned int i = 0; i <= qIndex_v.size(); ++i){
                         TSeqRead seqReadTmp = seqRead;
-                        //add option to just use the last element
                         if(m_log != EVE)
                         {
+                            //only do one iteration of the loop
+                            i = qIndex_v.size();
+                            // use last element
                             qIndex = qIndex_v.back();
                             am = am_v.back();
                         }else{
