@@ -37,8 +37,8 @@ int main(int argc, char const * argv[])
 //     addOption(parser, ArgParseOption("b", "bam", "Path to the bam file", ArgParseArgument::INPUT_FILE, "IN"));
 //     setRequired(parser, "bam");
 
-    addOption(parser, ArgParseOption("f", "foundBarcodes", "Path to the flexbar result", ArgParseArgument::INPUT_FILE, "IN"));
-    setRequired(parser, "foundBarcodes");
+    addOption(parser, ArgParseOption("f", "flexbarResult", "Path to the flexbar result (fasta)", ArgParseArgument::INPUT_FILE, "IN"));
+    setRequired(parser, "flexbarResult");
 //     setRequired(parser, "reads1");
 
     addOption(parser, ArgParseOption("o", "output", "Path to output files prefix", ArgParseArgument::OUTPUT_FILE, "OUT"));
@@ -46,7 +46,7 @@ int main(int argc, char const * argv[])
 
 //     addOption(parser, ArgParseOption("bL", "barcodeL", "Number of reads with are loaded at the same Time. Default = 100000", ArgParseArgument::INTEGER, "INT"));
 //     setRequired(parser, "barcodeL");
-    addOption(parser, ArgParseOption("bS", "batchSize", "Number of reads with are loaded at the same Time. Default = 100000", ArgParseArgument::INTEGER, "INT"));
+//     addOption(parser, ArgParseOption("bS", "batchSize", "Number of reads with are loaded at the same Time. Default = 100000", ArgParseArgument::INTEGER, "INT"));
 
     addOption(parser, ArgParseOption("v", "verbose", ""));
 
@@ -55,13 +55,13 @@ int main(int argc, char const * argv[])
         return res == ArgumentParser::PARSE_ERROR;
 
     CharString dictPath, flexPath, bamPath, outputPath;
-    int batchSize1 = 100000, barcodeLength;
+//     int batchSize1 = 100000, barcodeLength;
 
 //     getOptionValue(bamPath, parser, "bam");
-    getOptionValue(flexPath, parser, "foundBarcodes");
+    getOptionValue(flexPath, parser, "flexbarResult");
     getOptionValue(outputPath, parser, "output");
 //     getOptionValue(barcodeLength, parser, "barcodeL");
-    getOptionValue(batchSize1, parser, "batchSize");
+//     getOptionValue(batchSize1, parser, "batchSize");
     bool verbose = isSet(parser, "verbose");
 
 
