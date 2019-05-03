@@ -135,7 +135,6 @@ namespace flexbar{
 		ALL,
 		TAB,
 		MOD,
-                EVE
 	};
 
 	enum CompressionType {

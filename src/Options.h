@@ -21,6 +21,7 @@ struct Options{
 	bool isPaired, useAdapterFile, useNumberTag, useRemovalTag, randTag, logStdout;
 	bool switch2Fasta, writeUnassigned, writeSingleReads, writeSingleReadsP, writeLengthDist;
 	bool useStdin, useStdout, relaxRegion, revCompAdapter, qtrimPostRm, bNoMBV;
+        bool logEverything;
 
 	int cutLen_begin, cutLen_end, cutLen_read, a_tail_len, b_tail_len;
 	int qtrimThresh, qtrimWinSize, a_overhang;
@@ -59,6 +60,7 @@ struct Options{
 		useNumberTag      = false;
 		useRemovalTag     = false;
 		writeUnassigned   = false;
+                logEverything     = false;
 		writeSingleReads  = false;
 		writeSingleReadsP = false;
 		writeLengthDist   = false;
@@ -212,6 +214,7 @@ void defineOptions(seqan::ArgumentParser &parser, const std::string version, con
 
 	addSection(parser, "Logging and tagging");
 	addOption(parser, ArgParseOption("l", "align-log", "Print chosen read alignments.", ARG::STRING));
+        addOption(parser, ArgParseOption("eve", "everything", "Print all valid alignments between query and read."));
 	addOption(parser, ArgParseOption("o", "stdout-log", "Write statistics to console instead of target log file."));
 	addOption(parser, ArgParseOption("g", "removal-tags", "Tag reads that are subject to adapter or barcode removal."));
 	addOption(parser, ArgParseOption("e", "number-tags", "Replace read tags by ascending number to save space."));
@@ -288,7 +291,7 @@ void defineOptions(seqan::ArgumentParser &parser, const std::string version, con
 
 	setValidValues(parser, "qtrim", "TAIL WIN BWA");
 	setValidValues(parser, "qtrim-format", "sanger solexa i1.3 i1.5 i1.8");
-	setValidValues(parser, "align-log", "ALL MOD TAB EVE");
+	setValidValues(parser, "align-log", "ALL MOD TAB");
 	setValidValues(parser, "zip-output", "GZ BZ2");
 	setValidValues(parser, "adapter-read-set", "1 2");
 
@@ -647,8 +650,9 @@ void loadOptions(Options &o, seqan::ArgumentParser &parser){
 		     if(o.logAlignStr == "ALL") o.logAlign = ALL;
 		else if(o.logAlignStr == "TAB") o.logAlign = TAB;
 		else if(o.logAlignStr == "MOD") o.logAlign = MOD;
-                else if(o.logAlignStr == "EVE") o.logAlign = EVE;
 	}
+
+	if(isSet(parser, "everything")) o.logEverything = true;
 
 	if(isSet(parser, "zip-output")){
 		getOptionValue(o.outCompression, parser, "zip-output");

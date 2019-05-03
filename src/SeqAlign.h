@@ -15,7 +15,7 @@ private:
 	const flexbar::LogAlign m_log;
 	const flexbar::FileFormat m_format;
 
-	const bool m_isBarcoding, m_writeTag, m_randTag, m_strictRegion;
+	const bool m_isBarcoding, m_writeTag, m_randTag, m_strictRegion, m_logEverything;
 	const int m_minLength, m_minOverlap, m_tailLength;
 	const float m_errorRate;
 	const unsigned int m_bundleSize;
@@ -39,6 +39,7 @@ public:
 			m_randTag(o.randTag),
 			m_minLength(o.min_readLen),
 			m_log(o.logAlign),
+			m_logEverything(o.logEverything),
 			m_format(o.format),
 			m_writeTag(o.useRemovalTag),
 			m_strictRegion(! o.relaxRegion),
@@ -148,14 +149,24 @@ public:
                                 amScore = a.score;
 				qIndex  = i;
 
-                                //TODO add option to clear vectors and reset bestScore
+                                //TODO for !m_logEverything do not use a vector
                                 if(amScore_bestScore < amScore){
                                     amScore_bestScore = amScore;
                                     pos_bestScore = qIndex_v.size();
+
+                                    if(!m_logEverything){
+                                        am_v.clear();
+                                        qIndex_v.clear();
+                                        am_v.push_back(a);
+                                        qIndex_v.push_back(qIndex);
+                                    }
+
                                 }
 
-                                am_v.push_back(a);
-                                qIndex_v.push_back(qIndex);
+                                if(m_logEverything){
+                                    am_v.push_back(a);
+                                    qIndex_v.push_back(qIndex);
+                                }
 			}
 		}
 
@@ -165,25 +176,29 @@ public:
                 if(qIndex_v.size() > 0){
                     for(unsigned int i = 0; i <= qIndex_v.size(); ++i){
                         TSeqRead seqReadTmp = seqRead;
-                        if(m_log != EVE)
+                        if(!m_logEverything)
                         {
                             //only do one iteration of the loop
                             i = qIndex_v.size();
                             // use best alignment
-                            qIndex = qIndex_v[pos_bestScore];
-                            am = am_v[pos_bestScore];
-                        }else{
+                            qIndex = qIndex_v.front();
+                            am = am_v.front();
+                        }
+                        else
+                        {
                             // skip best Score and log it in an additional iteration at the end
                             if(pos_bestScore == i)
                                 continue;
                             if(i < qIndex_v.size()){
-                                s << "Alternative Alignment:\n";
+                                if(m_log == ALL)
+                                    s << "Alternative Alignment:\n";
                                 qIndex = qIndex_v[i];
                                 am = am_v[i];
                             }
                             else
                             {
-                                s << "Best Alignment (" << qIndex_v.size() << "):" << "\n";
+                                if(m_log == ALL)
+                                    s << "Best Alignment (" << qIndex_v.size() << "):" << "\n";
                                 qIndex = qIndex_v[pos_bestScore];
                                 am = am_v[pos_bestScore];
                             }
@@ -279,7 +294,7 @@ public:
                             }
 
                             // alignment stats
-                            if(m_log == ALL || m_log == EVE || (m_log == MOD && performRemoval)){
+                            if(m_log == ALL || (m_log == MOD && performRemoval)){
 
                                     if(performRemoval){
                                             s << "Sequence removal:";
@@ -310,15 +325,26 @@ public:
                             else if(m_log == TAB){
                                     s << seqReadTmp.id    << "\t" << m_queries->at(qIndex).id << "\t"
                                     << am.startPosA  << "\t" << am.endPosA               << "\t" << am.overlapLength << "\t"
-                                    << am.mismatches << "\t" << am.gapsR + am.gapsA      << "\t" << am.allowedErrors << endl;
+                                    << am.mismatches << "\t" << am.gapsR + am.gapsA      << "\t" << am.allowedErrors;
+
+                                    if(m_logEverything){
+                                        if(i < qIndex_v.size())
+                                            s << "\t" << "a" << endl;
+                                        else
+                                            s << "\t" << "b:" << qIndex_v.size() << endl;
+                                    }
+                                    else
+                                    {
+                                        s << endl;
+                                    }
                             }
 
-                            if(i == qIndex_v.size() || m_log != EVE){
+                            if(i == qIndex_v.size() || !m_logEverything){
                                 seqRead = seqReadTmp;
                             }
                     }
                 }
-		else if(m_log == ALL || m_log == EVE)
+		else if(m_log == ALL)
                 {
 			s << "Unvalid alignment:"        << "\n"
 			  << "read id   " << seqRead.id  << "\n"
