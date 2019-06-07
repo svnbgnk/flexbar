@@ -62,7 +62,7 @@ int main(int argc, char const * argv[])
 //     getOptionValue(bamPath, parser, "bam");
     getOptionValue(flexPath, parser, "flexbarResult");
     getOptionValue(outputPath, parser, "output");
-//     getOptionValue(barcodeLength, parser, "barcodeL");
+    getOptionValue(barcodeLength, parser, "barcodeLength");
 //     getOptionValue(batchSize1, parser, "batchSize");
     bool verbose = isSet(parser, "verbose");
 
