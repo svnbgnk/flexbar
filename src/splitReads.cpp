@@ -44,6 +44,7 @@ int main(int argc, char const * argv[])
     addOption(parser, ArgParseOption("o", "output", "Path to output files prefix", ArgParseArgument::OUTPUT_FILE, "OUT"));
 //     setRequired(parser, "output");
 
+    addOption(parser, ArgParseOption("l", "barcodeLength", "Shorting reads to this length", ArgParseArgument::INTEGER, "INT"));
 //     addOption(parser, ArgParseOption("bL", "barcodeL", "Number of reads with are loaded at the same Time. Default = 100000", ArgParseArgument::INTEGER, "INT"));
 //     setRequired(parser, "barcodeL");
 //     addOption(parser, ArgParseOption("bS", "batchSize", "Number of reads with are loaded at the same Time. Default = 100000", ArgParseArgument::INTEGER, "INT"));
@@ -55,6 +56,7 @@ int main(int argc, char const * argv[])
         return res == ArgumentParser::PARSE_ERROR;
 
     CharString dictPath, flexPath, bamPath, outputPath;
+    int barcodeLength = 0;
 //     int batchSize1 = 100000, barcodeLength;
 
 //     getOptionValue(bamPath, parser, "bam");
@@ -96,12 +98,17 @@ int main(int argc, char const * argv[])
                 Pattern<CharString, Horspool> pattern(" revcomp");
                 find(finder, pattern);
                 int end = beginPosition(finder);
-    //             std::cout << "end: " << end << "\n";
+    //             std::cout << "end: " << end << "\n";i
                 bool doRC = end > 0;
-                if (doRC)
+                if (doRC){
+                    if (barcodeLength > 0 && length(read) > (barcodeLength + 1))
+                        read = suffix(read, length(read) - barcodeLength - 1);
                     writeRecord(seqFileOutRevcomp, id, read);
-                else
+                }else{
+                    if (barcodeLength > 0 && length(read) > (barcodeLength + 1))
+                        read = prefix(read, length(read) - barcodeLength - 1);
                     writeRecord(seqFileOut, id, read);
+                }
             }
         }
         catch (IOError const & e)
