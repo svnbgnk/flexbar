@@ -171,18 +171,18 @@ public:
             }
         }
 
-        int same_best_score = 0;
-        int similar_score = 0;
+        int smallest_diff = -1;
         if(m_logEverything){
             sort(scores.rbegin(), scores.rend());
-            for(int p = 0; p < scores.size(); ++p){
-                if(amScore_bestScore == scores[p])
-                    ++same_best_score;
-                if(amScore_bestScore <= (scores[p] + 2))
-                    ++similar_score;
-                else
-                    break;
-            }
+            if(scores.size() > 1)
+                smallest_diff = amScore_bestScore - scores[1];
+        }
+
+        string smallest_diff_to_best_score;
+        if(smallest_diff == -1){
+            smallest_diff_to_best_score = "";
+        }else{
+            smallest_diff_to_best_score = "/" + std::to_string(smallest_diff);
         }
 
         stringstream s;
@@ -213,7 +213,7 @@ public:
                             else
                             {
                                 if(m_log == ALL)
-                                    s << "Best Alignment (" << qIndex_v.size() << "/" << similar_score << "/" << same_best_score << "):" << "\n";
+                                    s << "Best Alignment (" << qIndex_v.size() << smallest_diff_to_best_score << "):" << "\n";
                                 qIndex = qIndex_v[pos_bestScore];
                                 am = am_v[pos_bestScore];
                             }
@@ -346,7 +346,7 @@ public:
                                         if(i < qIndex_v.size())
                                             s << "\t" << "a" << endl;
                                         else
-                                            s << "\t" << "b:" << qIndex_v.size() << "\t" << similar_score << "/" << same_best_score << endl;
+                                            s << "\t" << "b:" << qIndex_v.size() << smallest_diff_to_best_score << endl;
                                     }
                                     else
                                     {
