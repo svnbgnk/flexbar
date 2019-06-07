@@ -108,13 +108,13 @@ public:
 		TAlignResults am;
 
 		int qIndex  = -1;
-                int pos_bestScore = -1;
-                int amScore = numeric_limits<int>::min();
+        int pos_bestScore = -1;
+        int amScore = numeric_limits<int>::min();
 		int amScore_bestScore = numeric_limits<int>::min();
 
-                std::vector<TAlignResults> am_v;
-                std::vector<int> qIndex_v;
-
+        std::vector<TAlignResults> am_v;
+        std::vector<int> qIndex_v;
+        std::vector<int> scores;
 
 		// align each query sequence and store best one
 		for(unsigned int i = 0; i < m_queries->size(); ++i){
@@ -148,8 +148,10 @@ public:
 //              am      = a;
                 amScore = a.score;
                 qIndex  = i;
+                scores.push_back(scores);
 
                 //TODO for !m_logEverything do not use a vector
+                
                 if(amScore_bestScore < amScore){
                     amScore_bestScore = amScore;
                     pos_bestScore = qIndex_v.size();
@@ -168,6 +170,18 @@ public:
                 }
 			}
 		}
+		
+		int same_best_score = 0;
+        int similar_score = 0;
+		sort(scores.rbegin(), scores.rend());
+        for(int p = 0; p < scores.size(); ++p){
+            if(amScore_bestScore == scores[p])
+                ++same_best_score;
+            if(amScore_bestScore <= (scores[p] + 2))
+                ++similar_score;
+            else
+                break;
+        }
 
 		stringstream s;
 
@@ -197,7 +211,7 @@ public:
                             else
                             {
                                 if(m_log == ALL)
-                                    s << "Best Alignment (" << qIndex_v.size() << "):" << "\n";
+                                    s << "Best Alignment (" << qIndex_v.size() << "/" << similar_score << "/" << same_best_score << "):" << "\n";
                                 qIndex = qIndex_v[pos_bestScore];
                                 am = am_v[pos_bestScore];
                             }
@@ -330,7 +344,7 @@ public:
                                         if(i < qIndex_v.size())
                                             s << "\t" << "a" << endl;
                                         else
-                                            s << "\t" << "b:" << qIndex_v.size() << endl;
+                                            s << "\t" << "b:" << qIndex_v.size() << "\t" << similar_score << "/" << same_best_score << endl;
                                     }
                                     else
                                     {
