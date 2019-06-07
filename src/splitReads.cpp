@@ -106,7 +106,7 @@ int main(int argc, char const * argv[])
                     writeRecord(seqFileOutRevcomp, id, read);
                 }else{
                     if (barcodeLength > 0 && length(read) > (barcodeLength + 1))
-                        read = prefix(read, length(read) - barcodeLength - 1);
+                        read = prefix(read, barcodeLength + 1);
                     writeRecord(seqFileOut, id, read);
                 }
             }
