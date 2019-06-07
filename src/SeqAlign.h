@@ -145,28 +145,27 @@ public:
 			// check if alignment is valid, score max, number of errors and overlap length
 			if(validAl && a.score > amScore && madeErrors <= a.allowedErrors && a.overlapLength >= minOverlap){
 
-// 				am      = a;
-                                amScore = a.score;
-				qIndex  = i;
+//              am      = a;
+                amScore = a.score;
+                qIndex  = i;
 
-                                //TODO for !m_logEverything do not use a vector
-                                if(amScore_bestScore < amScore){
-                                    amScore_bestScore = amScore;
-                                    pos_bestScore = qIndex_v.size();
+                //TODO for !m_logEverything do not use a vector
+                if(amScore_bestScore < amScore){
+                    amScore_bestScore = amScore;
+                    pos_bestScore = qIndex_v.size();
 
-                                    if(!m_logEverything){
-                                        am_v.clear();
-                                        qIndex_v.clear();
-                                        am_v.push_back(a);
-                                        qIndex_v.push_back(qIndex);
-                                    }
+                    if(!m_logEverything){
+                        am_v.clear();
+                        qIndex_v.clear();
+                        am_v.push_back(a);
+                        qIndex_v.push_back(qIndex);
+                    }
+                }
 
-                                }
-
-                                if(m_logEverything){
-                                    am_v.push_back(a);
-                                    qIndex_v.push_back(qIndex);
-                                }
+                if(m_logEverything){
+                    am_v.push_back(a);
+                    qIndex_v.push_back(qIndex);
+                }
 			}
 		}
 
