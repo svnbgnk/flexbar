@@ -214,7 +214,7 @@ void defineOptions(seqan::ArgumentParser &parser, const std::string version, con
 
 	addSection(parser, "Logging and tagging");
 	addOption(parser, ArgParseOption("l", "align-log", "Print chosen read alignments.", ARG::STRING));
-        addOption(parser, ArgParseOption("eve", "everything", "Print all valid alignments between query and read."));
+        addOption(parser, ArgParseOption("eve", "everything", "Print all valid alignments between query and read. Additonally mark best alignment with b and log difference between best and second best alignment if it exists"));
 	addOption(parser, ArgParseOption("o", "stdout-log", "Write statistics to console instead of target log file."));
 	addOption(parser, ArgParseOption("g", "removal-tags", "Tag reads that are subject to adapter or barcode removal."));
 	addOption(parser, ArgParseOption("e", "number-tags", "Replace read tags by ascending number to save space."));
