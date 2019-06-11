@@ -340,7 +340,7 @@ public:
                             else if(m_log == TAB){
                                     s << seqReadTmp.id    << "\t" << m_queries->at(qIndex).id << "\t"
                                     << am.startPosA  << "\t" << am.endPosA               << "\t" << am.overlapLength << "\t"
-                                    << am.mismatches << "\t" << am.gapsR + am.gapsA      << "\t" << am.allowedErrors << am.score;
+                                    << am.mismatches << "\t" << am.gapsR + am.gapsA      << "\t" << am.allowedErrors << "\t" << am.score;
 
                                     if(m_logEverything){
                                         if(i < qIndex_v.size())
