@@ -22,6 +22,7 @@ struct Options{
 	bool switch2Fasta, writeUnassigned, writeSingleReads, writeSingleReadsP, writeLengthDist;
 	bool useStdin, useStdout, relaxRegion, revCompAdapter, qtrimPostRm, bNoMBV;
         bool logEverything;
+        int prefix;
 
 	int cutLen_begin, cutLen_end, cutLen_read, a_tail_len, b_tail_len;
 	int qtrimThresh, qtrimWinSize, a_overhang;
@@ -74,6 +75,7 @@ struct Options{
 		qtrimPostRm       = false;
 		bNoMBV            = false;
 
+                prefix        = 0;
 		cutLen_begin  = 0;
 		cutLen_end    = 0;
 		cutLen_read   = 0;
@@ -215,6 +217,7 @@ void defineOptions(seqan::ArgumentParser &parser, const std::string version, con
 	addSection(parser, "Logging and tagging");
 	addOption(parser, ArgParseOption("l", "align-log", "Print chosen read alignments.", ARG::STRING));
         addOption(parser, ArgParseOption("eve", "everything", "Print all valid alignments between query and read. Additonally mark best alignment with b and log difference between best and second best alignment if it exists"));
+        addOption(parser, ArgParseOption("pf", "prefix", "Count number of mismatches and gaps prefix of the given adapter/barcode sequences.", ARG::INTEGER));
 	addOption(parser, ArgParseOption("o", "stdout-log", "Write statistics to console instead of target log file."));
 	addOption(parser, ArgParseOption("g", "removal-tags", "Tag reads that are subject to adapter or barcode removal."));
 	addOption(parser, ArgParseOption("e", "number-tags", "Replace read tags by ascending number to save space."));
@@ -652,6 +655,7 @@ void loadOptions(Options &o, seqan::ArgumentParser &parser){
 		else if(o.logAlignStr == "MOD") o.logAlign = MOD;
 	}
 
+	getOptionValue(o.prefix, parser, "prefix");
 	if(isSet(parser, "everything")) o.logEverything = true;
 
 	if(isSet(parser, "zip-output")){

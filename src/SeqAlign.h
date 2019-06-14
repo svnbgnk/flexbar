@@ -15,7 +15,7 @@ private:
     const flexbar::LogAlign m_log;
     const flexbar::FileFormat m_format;
 
-    const bool m_isBarcoding, m_writeTag, m_randTag, m_strictRegion, m_logEverything;
+    const bool m_isBarcoding, m_writeTag, m_randTag, m_strictRegion, m_logEverything, m_prefixLog;
     const int m_minLength, m_minOverlap, m_tailLength;
     const float m_errorRate;
     const unsigned int m_bundleSize;
@@ -40,6 +40,7 @@ public:
             m_minLength(o.min_readLen),
             m_log(o.logAlign),
             m_logEverything(o.logEverything),
+            m_prefixLog(o.prefix != 0),
             m_format(o.format),
             m_writeTag(o.useRemovalTag),
             m_strictRegion(! o.relaxRegion),
@@ -320,20 +321,26 @@ public:
                                     }
                                     else s << "Sequence detection, no removal:\n";
 
-                                    s << "  query id         " << m_queries->at(qIndex).id            << "\n"
-                                    << "  query pos        " << am.startPosA << "-" << am.endPosA   << "\n"
-                                    << "  read id          " << seqReadTmp.id                          << "\n"
-                                    << "  read pos         " << am.startPosS << "-" << am.endPosS   << "\n"
-                                    << "  score            " << am.score                            << "\n"
-                                    << "  overlap          " << am.overlapLength                    << "\n"
-                                    << "  errors           " << am.gapsR + am.gapsA + am.mismatches << "\n"
-                                    << "  error threshold  " << am.allowedErrors                    << "\n";
+                                    s << "  query id           " << m_queries->at(qIndex).id            << "\n"
+                                    << "  query pos          " << am.startPosA << "-" << am.endPosA   << "\n"
+                                    << "  read id            " << seqReadTmp.id                          << "\n"
+                                    << "  read pos           " << am.startPosS << "-" << am.endPosS   << "\n"
+                                    << "  score              " << am.score                            << "\n"
+                                    << "  overlap            " << am.overlapLength                    << "\n"
+                                    << "  errors             " << am.gapsR + am.gapsA + am.mismatches << "\n"
+                                    << "  error threshold    " << am.allowedErrors                    << "\n";
+
+                                    //barcode stats
+                                    if(m_prefixLog){
+                                        s << "  prefix mismatches  " << am.mismatchesPrefix << "\n"
+                                        << "  prefix indels      " << am.gapsPrefix << "\n";
+                                    }
 
                                     if(performRemoval){
                                             s << "  remaining read   " << seqReadTmp.seq << "\n";
 
                                             if(m_format == FASTQ)
-                                            s << "  remaining qual   " << seqReadTmp.qual << "\n";
+                                                s << "  remaining qual   " << seqReadTmp.qual << "\n";
                                     }
                                     s << "\n  Alignment:\n" << endl << am.alString;
                             }
@@ -341,6 +348,12 @@ public:
                                     s << seqReadTmp.id    << "\t" << m_queries->at(qIndex).id << "\t"
                                     << am.startPosA  << "\t" << am.endPosA               << "\t" << am.overlapLength << "\t"
                                     << am.mismatches << "\t" << am.gapsR + am.gapsA      << "\t" << am.allowedErrors << "\t" << am.score;
+
+                                    //barcode stats
+                                    if(m_prefixLog){
+                                        s << "\t" << am.mismatchesPrefix << "\t" << am.gapsPrefix;
+                                    }
+
 
                                     if(m_logEverything){
                                         if(i < qIndex_v.size())

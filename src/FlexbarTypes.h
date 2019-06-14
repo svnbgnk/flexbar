@@ -52,7 +52,7 @@ class PairedRead {
 template <typename TSeqStr>
 struct AlignResults{
 
-	int score, mismatches, gapsR, gapsA;
+	int score, mismatches, gapsR, gapsA, gapsPrefix, mismatchesPrefix;
 	int startPos, startPosA, startPosS;
 	int endPos, endPosS, endPosA;
 	int overlapLength, queryLength, tailLength;
