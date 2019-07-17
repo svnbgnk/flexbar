@@ -143,12 +143,14 @@ namespace flexbar{
 		BZ2
 	};
 
-	enum TrimEnd {
+        enum TrimEnd {
 		ANY,
 		LEFT,
 		RIGHT,
 		LTAIL,
-		RTAIL
+		RTAIL,
+                WUN,
+                LTAILS
 	};
 
 	enum FileFormat {

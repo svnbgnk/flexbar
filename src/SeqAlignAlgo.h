@@ -81,10 +81,19 @@ public:
 				AlignConfig<true, true, false, true> ac;
 				alignments.ascores = globalAlignment(alignments.aset, m_scoreMatrix, ac);
 			}
-			else{
+			else if (m_trimEnd == ANY){
 				AlignConfig<true, true, true, true> ac;
 				alignments.ascores = globalAlignment(alignments.aset, m_scoreMatrix, ac);
 			}
+			else if (m_trimEnd == LTAILS){ //TODO add LEFTS
+                            AlignConfig<false, false, false, true> ac;
+                            alignments.ascores = globalAlignment(alignments.aset, m_scoreMatrix, ac);
+                        }
+			else
+                        {
+                            AlignConfig<false, false, false, false> ac;
+                            alignments.ascores = globalAlignment(alignments.aset, m_scoreMatrix, ac);
+                        }
 		}
 
 		TAlign &align = alignments.aset[idxAl];
@@ -97,21 +106,33 @@ public:
 		TRow &row1 = row(align, 0);
 		TRow &row2 = row(align, 1);
 
+
+
 		a.startPosS = toViewPosition(row1, 0);
 		a.startPosA = toViewPosition(row2, 0);
 		a.endPosS   = toViewPosition(row1, length(source(row1)));
 		a.endPosA   = toViewPosition(row2, length(source(row2)));
 
-		a.startPos = (a.startPosA > a.startPosS) ? a.startPosA : a.startPosS;
-		a.endPos   = (a.endPosA   > a.endPosS)   ? a.endPosS   : a.endPosA;
+
+                a.startPos = (a.startPosA > a.startPosS) ? a.startPosA : a.startPosS;
+                a.endPos   = (a.endPosA   > a.endPosS)   ? a.endPosS   : a.endPosA;
+
+                if(m_trimEnd == WUN){
+                    a.startPos = 0;
+                    a.endPos = (a.endPosA  < a.endPosS) ? a.endPosS : a.endPosA;
+                }
+
+                if(m_trimEnd == LTAILS){
+                    a.startPos = 0;
+                }
 
 		// cout << startPosS << endl << startPosA << endl;
 		// cout << endPosS   << endl << endPosA   << endl;
 
 		if(m_log != NONE){
 			stringstream s;
-			s << align;
-			a.alString = s.str();
+                        s << align;
+                        a.alString = s.str();
 		}
 
 		if(m_randTag) a.randTag = "";

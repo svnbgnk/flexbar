@@ -217,7 +217,7 @@ void defineOptions(seqan::ArgumentParser &parser, const std::string version, con
 	addSection(parser, "Logging and tagging");
 	addOption(parser, ArgParseOption("l", "align-log", "Print chosen read alignments.", ARG::STRING));
         addOption(parser, ArgParseOption("eve", "everything", "Print all valid alignments between query and read. Additonally mark best alignment with b and log difference between best and second best alignment if it exists"));
-        addOption(parser, ArgParseOption("pf", "prefix", "Count number of mismatches and gaps prefix of the given adapter/barcode sequences.", ARG::INTEGER));
+        addOption(parser, ArgParseOption("pf", "prefix", "Count number of mismatches and gaps in the prefix of the given adapter/barcode sequences.", ARG::INTEGER));
 	addOption(parser, ArgParseOption("o", "stdout-log", "Write statistics to console instead of target log file."));
 	addOption(parser, ArgParseOption("g", "removal-tags", "Tag reads that are subject to adapter or barcode removal."));
 	addOption(parser, ArgParseOption("e", "number-tags", "Replace read tags by ascending number to save space."));
@@ -699,6 +699,8 @@ void loadOptions(Options &o, seqan::ArgumentParser &parser){
 		else if(b_trim_end == "ANY")    o.b_end = ANY;
 		else if(b_trim_end == "LTAIL")  o.b_end = LTAIL;
 		else if(b_trim_end == "RTAIL")  o.b_end = RTAIL;
+                else if(b_trim_end == "WUN")    o.b_end = WUN;
+                else if(b_trim_end == "LTAILS") o.b_end = LTAILS;
 		else{
 			cerr << "Specified barcode trim-end is unknown!\n" << endl;
 			exit(1);
@@ -761,6 +763,8 @@ void loadOptions(Options &o, seqan::ArgumentParser &parser){
 		else if(a_trim_end == "ANY")         o.end = ANY;
 		else if(a_trim_end == "LTAIL")   o.end = LTAIL;
 		else if(a_trim_end == "RTAIL")  o.end = RTAIL;
+                else if(a_trim_end == "WUN")    o.end = WUN;
+                else if(a_trim_end == "LTAILS") o.end = LTAILS;
 		else {
 			cerr << "Specified adapter trim-end is unknown!\n" << endl;
 			exit(1);

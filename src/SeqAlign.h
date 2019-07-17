@@ -84,12 +84,12 @@ public:
                 TSeqStr *rseq = &seqRead.seq;
                 TSeqStr tmp;
 
-                if(m_trimEnd == LTAIL || m_trimEnd == RTAIL){
+                if(m_trimEnd == LTAIL || m_trimEnd == LTAILS || m_trimEnd == RTAIL){
                     int tailLength  = (m_tailLength > 0) ? m_tailLength : length(qseq);
 
                     if(tailLength < readLength){
-                        if(m_trimEnd == LTAIL) tmp = prefix(seqRead.seq, tailLength);
-                        else                   tmp = suffix(seqRead.seq, readLength - tailLength);
+                        if(m_trimEnd == LTAIL || m_trimEnd == LTAILS) tmp = prefix(seqRead.seq, tailLength);
+                        else                                          tmp = suffix(seqRead.seq, readLength - tailLength);
                         rseq = &tmp;
                     }
                 }
@@ -137,7 +137,7 @@ public:
             bool validAl = true;
 
             if(((m_trimEnd == RTAIL  || m_trimEnd == RIGHT) && a.startPosA < a.startPosS && m_strictRegion) ||
-               ((m_trimEnd == LTAIL  || m_trimEnd == LEFT)  && a.endPosA   > a.endPosS   && m_strictRegion) ||
+               ((m_trimEnd == LTAIL  || m_trimEnd == LEFT || m_trimEnd == LTAILS)  && a.endPosA   > a.endPosS   && m_strictRegion) ||
                  a.overlapLength < 1){
 
                 validAl = false;
@@ -225,7 +225,7 @@ public:
                             // trim read based on alignment
                             if(performRemoval){
 
-                                    if(trimEnd == ANY){
+                                    if(trimEnd == ANY || trimEnd == WUN){
 
                                             if(am.startPosA <= am.startPosS && am.endPosS <= am.endPosA){
                                                     seqReadTmp.seq = "";
@@ -241,6 +241,7 @@ public:
 
                                             int rCutPos;
 
+                                            case LTAILS:
                                             case LTAIL:
                                             case LEFT:
                                                     rCutPos = am.endPos;
@@ -277,7 +278,7 @@ public:
 
                                                     break;
 
-                            case ANY:;
+                                            case ANY:;
                                     }
 
                                     ++m_modified;
@@ -315,7 +316,7 @@ public:
                                     if(performRemoval){
                                             s << "Sequence removal:";
 
-                                                if(trimEnd == LEFT  || trimEnd == LTAIL) s << " left side\n";
+                                                if(trimEnd == LEFT  || trimEnd == LTAIL || trimEnd == LTAILS) s << " left side\n";
                                             else if(trimEnd == RIGHT || trimEnd == RTAIL) s << " right side\n";
                                             else                                          s << " any side\n";
                                     }
@@ -343,6 +344,7 @@ public:
                                                 s << "  remaining qual   " << seqReadTmp.qual << "\n";
                                     }
                                     s << "\n  Alignment:\n" << endl << am.alString;
+
                             }
                             else if(m_log == TAB){
                                     s << seqReadTmp.id    << "\t" << m_queries->at(qIndex).id << "\t"
